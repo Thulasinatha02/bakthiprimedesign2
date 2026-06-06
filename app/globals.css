@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gold-50: #fffbeb;
+  --color-gold-100: #fef3c7;
+  --color-gold-200: #fde68a;
+  --color-gold-300: #fcd34d;
+  --color-gold-400: #fbbf24;
+  --color-gold-500: #f59e0b;
+  --color-gold-600: #d97706;
+  --color-gold-700: #b45309;
+  --color-gold-800: #92400e;
+  --color-gold-900: #78350f;
+  --color-gold-950: #451a03;
+}
+
+:root {
+  --background: #fdfbf7;
+  --foreground: #292524;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom glowing effects */
+.gold-glow-text {
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.5), 0 0 15px rgba(217, 119, 6, 0.3);
+}
+
+.gold-glow-border {
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+}
+
+.diya-flame {
+  animation: flameFlicker 1.5s infinite alternate ease-in-out;
+  transform-origin: bottom center;
+}
+
+@keyframes flameFlicker {
+  0% { transform: scale(1) rotate(-1deg); filter: brightness(1); }
+  50% { transform: scale(1.08) rotate(1deg); filter: brightness(1.2); }
+  100% { transform: scale(0.95) rotate(-0.5deg); filter: brightness(0.9); }
+}
+
+.marquee-container {
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+}
+
+.marquee-content {
+  display: inline-block;
+  padding-left: 100%;
+  animation: marquee 35s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-100%, 0, 0); }
+}
+
+/* Glassmorphism Classes for Admin Dashboard */
+.glass-panel {
+  background: rgba(45, 15, 3, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(251, 191, 36, 0.15);
+}
+
+.glass-card {
+  background: rgba(254, 243, 199, 0.05);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(251, 191, 36, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  background: rgba(254, 243, 199, 0.08);
+  border-color: rgba(251, 191, 36, 0.25);
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(245, 158, 11, 0.4);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.6);
+}
