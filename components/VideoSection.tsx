@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Play } from 'lucide-react';
+import { Play, ExternalLink } from 'lucide-react';
 
 interface VideoItem {
   _id: string;
@@ -11,6 +11,45 @@ interface VideoItem {
   description: string;
   thumbnail: string;
 }
+
+const getVideoId = (url: string): string => {
+  if (!url) return '';
+
+  // Already an embed URL like https://www.youtube.com/embed/VIDEO_ID
+  const embedMatch = url.match(/youtube\.com\/embed\/([^?&]+)/);
+  if (embedMatch) return embedMatch[1];
+
+  // Standard watch URL: https://www.youtube.com/watch?v=VIDEO_ID
+  const watchMatch = url.match(/[?&]v=([^&]+)/);
+  if (watchMatch) return watchMatch[1];
+
+  // Short URL: https://youtu.be/VIDEO_ID
+  const shortMatch = url.match(/youtu\.be\/([^?&]+)/);
+  if (shortMatch) return shortMatch[1];
+
+  // Mobile URL: https://m.youtube.com/watch?v=VIDEO_ID
+  const mobileMatch = url.match(/m\.youtube\.com\/watch\?v=([^&]+)/);
+  if (mobileMatch) return mobileMatch[1];
+
+  return '';
+};
+
+const getEmbedUrl = (url: string): string => {
+  const id = getVideoId(url);
+  if (!id) return '';
+  return `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1`;
+};
+
+const getThumbnail = (url: string, fallback: string): string => {
+  const id = getVideoId(url);
+  if (id) return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+  return fallback || '';
+};
+
+const getWatchUrl = (url: string): string => {
+  const id = getVideoId(url);
+  return id ? `https://www.youtube.com/watch?v=${id}` : url;
+};
 
 export default function VideoSection() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
@@ -51,62 +90,90 @@ export default function VideoSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {videos.map((video) => (
-            <motion.div
-              key={video._id}
-              whileHover={{ y: -5 }}
-              className="bg-white rounded-xl shadow-md overflow-hidden border border-amber-100/60 flex flex-col h-full group transition-all duration-300"
-            >
-              {/* Media Player Container */}
-              <div className="relative aspect-video w-full bg-black flex items-center justify-center overflow-hidden">
-                {activeVideoId === video._id ? (
-                  <iframe
-                    src={`${video.youtubeUrl}?autoplay=1`}
-                    title={video.title}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                    className="absolute inset-0 w-full h-full border-0"
-                  />
-                ) : (
-                  <div 
-                    onClick={() => setActiveVideoId(video._id)}
-                    className="relative w-full h-full cursor-pointer flex items-center justify-center group"
-                  >
-                    {/* Thumbnail */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={video.thumbnail || `https://img.youtube.com/vi/${video.youtubeUrl.split('/').pop()}/0.jpg`}
-                      alt={video.title}
-                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500 brightness-90"
+          {videos.map((video) => {
+            const embedUrl = getEmbedUrl(video.youtubeUrl);
+            const thumbnail = getThumbnail(video.youtubeUrl, video.thumbnail);
+            const watchUrl = getWatchUrl(video.youtubeUrl);
+
+            return (
+              <motion.div
+                key={video._id}
+                whileHover={{ y: -5 }}
+                className="bg-white rounded-xl shadow-md overflow-hidden border border-amber-100/60 flex flex-col h-full group transition-all duration-300"
+              >
+                {/* Media Player Container */}
+                <div className="relative aspect-video w-full bg-black overflow-hidden">
+                  {activeVideoId === video._id && embedUrl ? (
+                    <iframe
+                      src={`${embedUrl}&autoplay=1`}
+                      title={video.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      className="absolute inset-0 w-full h-full border-0"
                     />
-                    
-                    {/* Dark gradient overlay */}
-                    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition duration-300"></div>
+                  ) : (
+                    <div className="relative w-full h-full">
+                      {/* Thumbnail */}
+                      <img
+                        src={thumbnail}
+                        alt={video.title}
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500 brightness-90"
+                        onError={(e) => {
+                          // Fallback to default thumbnail if hqdefault fails
+                          const target = e.target as HTMLImageElement;
+                          const id = getVideoId(video.youtubeUrl);
+                          if (id && !target.src.includes('mqdefault')) {
+                            target.src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
+                          }
+                        }}
+                      />
 
-                    {/* Glowing Play Button */}
-                    <motion.div
-                      whileHover={{ scale: 1.15 }}
-                      className="relative z-10 w-14 h-14 bg-gradient-to-br from-yellow-400 to-orange-600 rounded-full flex items-center justify-center shadow-lg border border-amber-300/40 text-white"
-                    >
-                      <Play className="w-6 h-6 fill-current translate-x-0.5" />
-                    </motion.div>
-                  </div>
-                )}
-              </div>
+                      {/* Dark overlay */}
+                      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition duration-300" />
 
-              {/* Text Area */}
-              <div className="p-5 flex-grow flex flex-col justify-between">
-                <div className="space-y-2">
-                  <h3 className="font-bold text-amber-950 text-base line-clamp-1 group-hover:text-orange-600 transition duration-200">
-                    {video.title}
-                  </h3>
-                  <p className="text-stone-500 text-xs line-clamp-2 leading-relaxed">
-                    {video.description || 'தெய்வீக அருள் வழங்கும் பக்தி பாடல் தொகுப்பு.'}
-                  </p>
+                      {/* Play button — opens embed inline */}
+                      <button
+                        onClick={() => setActiveVideoId(video._id)}
+                        className="absolute inset-0 w-full h-full flex items-center justify-center z-10 cursor-pointer"
+                        aria-label={`Play ${video.title}`}
+                      >
+                        <motion.div
+                          whileHover={{ scale: 1.15 }}
+                          className="w-14 h-14 bg-gradient-to-br from-yellow-400 to-orange-600 rounded-full flex items-center justify-center shadow-lg border border-amber-300/40 text-white"
+                        >
+                          <Play className="w-6 h-6 fill-current translate-x-0.5" />
+                        </motion.div>
+                      </button>
+
+                      {/* Open in YouTube button */}
+                      <a
+                        href={watchUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute bottom-2 right-2 z-20 flex items-center gap-1 px-2 py-1 bg-black/70 hover:bg-red-600 text-white text-[10px] font-semibold rounded-md transition duration-200"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        YouTube
+                      </a>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </motion.div>
-          ))}
+
+                {/* Text Area */}
+                <div className="p-5 flex-grow flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-amber-950 text-base line-clamp-1 group-hover:text-orange-600 transition duration-200">
+                      {video.title}
+                    </h3>
+                    <p className="text-stone-500 text-xs line-clamp-2 leading-relaxed">
+                      {video.description || 'தெய்வீக அருள் வழங்கும் பக்தி பாடல் தொகுப்பு.'}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
