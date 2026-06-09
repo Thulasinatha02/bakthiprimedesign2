@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/mongodb';
 import Comment from '@/models/Comment';
+import { withDb } from '@/lib/withDb';
 
-export async function GET(request: Request) {
+export const GET = withDb(async (request: Request) => {
   try {
-    await dbConnect();
     const { searchParams } = new URL(request.url);
     const targetKey = searchParams.get('targetKey');
     const targetType = searchParams.get('targetType');
@@ -18,11 +17,10 @@ export async function GET(request: Request) {
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
   }
-}
+});
 
-export async function POST(request: Request) {
+export const POST = withDb(async (request: Request) => {
   try {
-    await dbConnect();
     const body = await request.json();
     const { name, content, targetKey, targetType } = body;
 
@@ -34,11 +32,11 @@ export async function POST(request: Request) {
       name: name.trim(),
       content: content.trim(),
       targetKey,
-      targetType
+      targetType,
     });
 
     return NextResponse.json({ success: true, data: newComment });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
   }
-}
+});

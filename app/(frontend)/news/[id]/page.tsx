@@ -2,18 +2,23 @@
 
 import { useState, useEffect, use } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Tag, ArrowLeft, Share2 } from 'lucide-react';
+import { Calendar, Tag, ArrowLeft, Video, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { DetailedPageSkeleton } from '@/components/LoadingSkeleton';
 import { useLanguage } from '@/context/LanguageContext';
 
 interface NewsItem {
   _id: string;
-  title: string;
-  content: string;
-  image: string;
+  titleTamil: string;
+  titleEnglish: string;
+  descriptionTamil: string;
+  descriptionEnglish: string;
   category: string;
+  image: string;
+  youtubeUrl: string;
+  youtubeVideoId: string;
   createdAt: string;
+  publishDate: string;
 }
 
 interface Props {
@@ -59,6 +64,9 @@ export default function NewsDetailPage({ params }: Props) {
     );
   }
 
+  const title = language === 'ta' ? news.titleTamil : news.titleEnglish;
+  const description = language === 'ta' ? news.descriptionTamil : news.descriptionEnglish;
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 sm:px-6">
       
@@ -77,36 +85,46 @@ export default function NewsDetailPage({ params }: Props) {
         animate={{ opacity: 1, y: 0 }}
         className="bg-white rounded-3xl shadow-lg border border-amber-100 overflow-hidden"
       >
-        {/* Cover Image */}
-        {news.image && (
+        {/* Cover Image or YouTube Embed Player */}
+        {news.youtubeVideoId ? (
+          <div className="relative aspect-video w-full bg-black">
+            <iframe
+              src={`https://www.youtube.com/embed/${news.youtubeVideoId}?rel=0&modestbranding=1&autoplay=0`}
+              title={title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              className="absolute inset-0 w-full h-full border-0"
+            />
+          </div>
+        ) : news.image ? (
           <div className="relative h-[250px] sm:h-[400px] w-full bg-stone-900">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src={news.image} 
-              alt={t(news.title)} 
+              alt={title} 
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
           </div>
-        )}
+        ) : null}
 
         {/* Content Area */}
         <div className="p-6 sm:p-10 space-y-6">
           <div className="space-y-4">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-amber-950 font-sans tracking-wide leading-snug">
-              {t(news.title)}
+              {title}
             </h1>
 
             {/* Badges */}
             <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-stone-500">
               <span className="flex items-center gap-1.5 text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full">
                 <Tag className="w-3.5 h-3.5" />
-                {t(news.category === 'Spiritual' ? 'ஆன்மிகம்' : news.category === 'Astrology' ? 'ஜோதிடம்' : news.category)}
+                {t(news.category)}
               </span>
               <span className="flex items-center gap-1.5">
                 <Calendar className="w-3.5 h-3.5 text-stone-400" />
                 <span>
-                  {new Date(news.createdAt).toLocaleDateString(language === 'ta' ? 'ta-IN' : 'en-US', {
+                  {new Date(news.publishDate || news.createdAt).toLocaleDateString(language === 'ta' ? 'ta-IN' : 'en-US', {
                     day: 'numeric',
                     month: 'long',
                     year: 'numeric',
@@ -115,13 +133,24 @@ export default function NewsDetailPage({ params }: Props) {
                   })}
                 </span>
               </span>
+              {news.youtubeUrl && (
+                <a
+                  href={news.youtubeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-red-600 bg-red-50 hover:bg-red-100 transition px-2.5 py-1 rounded-full text-[11px]"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  <span>YouTube</span>
+                </a>
+              )}
             </div>
           </div>
 
           {/* Full content */}
           <div className="border-t border-stone-100 pt-6">
             <p className="text-stone-700 text-sm sm:text-base leading-relaxed whitespace-pre-line font-normal">
-              {t(news.content)}
+              {description}
             </p>
           </div>
 

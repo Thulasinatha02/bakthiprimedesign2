@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { dbConnect } from '@/lib/mongodb';
 import User from '@/models/User';
 import { signToken } from '@/lib/jwt';
+import { withDb } from '@/lib/withDb';
 
-export async function POST(request: Request) {
+export const POST = withDb(async (request: Request) => {
   try {
-    await dbConnect();
     const { username, password } = await request.json();
 
     if (!username || !password) {
@@ -28,7 +27,7 @@ export async function POST(request: Request) {
     const response = NextResponse.json({
       success: true,
       user: { id: user._id, username: user.username },
-      token
+      token,
     });
 
     // Set cookie
@@ -45,4 +44,4 @@ export async function POST(request: Request) {
     console.error('Login error:', error);
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
   }
-}
+});

@@ -9,11 +9,15 @@ import { useLanguage } from '@/context/LanguageContext';
 
 interface Article {
   _id: string;
-  title: string;
-  content: string;
-  image: string;
+  titleTamil: string;
+  titleEnglish: string;
+  descriptionTamil: string;
+  descriptionEnglish: string;
   category: string;
+  image: string;
+  youtubeVideoId?: string;
   createdAt: string;
+  publishDate?: string;
 }
 
 export default function OthersPage() {
@@ -66,48 +70,51 @@ export default function OthersPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {articles.map((item) => (
-            <Link key={item._id} href={`/news/${item._id}`}>
-              <motion.article
-                whileHover={{ y: -5 }}
-                className="bg-white rounded-2xl shadow-sm border border-amber-100/60 overflow-hidden flex flex-col justify-between h-full cursor-pointer group transition-all duration-300 hover:shadow-md"
-              >
-                <div>
-                  {/* Image */}
-                  {item.image && (
-                    <div className="relative aspect-video overflow-hidden bg-stone-100">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={item.image}
-                        alt={t(item.title)}
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                      />
-                      <div className="absolute top-4 left-4 px-2 py-0.5 rounded bg-amber-500 text-amber-950 text-[10px] font-bold uppercase tracking-wider">
-                        {t(item.category === 'Cinema' ? 'சினிமா' : item.category === 'Sports' ? 'விளையாட்டு' : item.category)}
+          {articles.map((item) => {
+            const title = language === 'ta' ? item.titleTamil : item.titleEnglish;
+            const description = language === 'ta' ? item.descriptionTamil : item.descriptionEnglish;
+            return (
+              <Link key={item._id} href={`/news/${item._id}`}>
+                <motion.article
+                  whileHover={{ y: -5 }}
+                  className="bg-white rounded-2xl shadow-sm border border-amber-100/60 overflow-hidden flex flex-col justify-between h-full cursor-pointer group transition-all duration-300 hover:shadow-md"
+                >
+                  <div>
+                    {/* Image */}
+                    {item.image && (
+                      <div className="relative aspect-video overflow-hidden bg-stone-100">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={item.image}
+                          alt={title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                        />
+                        <div className="absolute top-4 left-4 px-2 py-0.5 rounded bg-amber-500 text-amber-950 text-[10px] font-bold uppercase tracking-wider">
+                          {t(item.category)}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Body */}
-                  <div className="p-6 space-y-3">
-                    <div className="flex items-center gap-1.5 text-[10px] text-stone-400 font-bold uppercase">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>
-                        {new Date(item.createdAt).toLocaleDateString(language === 'ta' ? 'ta-IN' : 'en-US', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        })}
-                      </span>
+                    {/* Body */}
+                    <div className="p-6 space-y-3">
+                      <div className="flex items-center gap-1.5 text-[10px] text-stone-400 font-bold uppercase">
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span>
+                          {new Date(item.publishDate || item.createdAt).toLocaleDateString(language === 'ta' ? 'ta-IN' : 'en-US', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                          })}
+                        </span>
+                      </div>
+                      <h2 className="font-extrabold text-amber-950 text-base leading-snug line-clamp-2 group-hover:text-orange-600 transition">
+                        {title}
+                      </h2>
+                      <p className="text-stone-500 text-xs line-clamp-3 leading-relaxed">
+                        {description}
+                      </p>
                     </div>
-                    <h2 className="font-extrabold text-amber-950 text-base leading-snug line-clamp-2 group-hover:text-orange-600 transition">
-                      {t(item.title)}
-                    </h2>
-                    <p className="text-stone-500 text-xs line-clamp-3 leading-relaxed">
-                      {t(item.content)}
-                    </p>
                   </div>
-                </div>
 
                 {/* Footer Link */}
                 <div className="px-6 pb-6 pt-2 border-t border-stone-50/50 flex justify-between items-center text-xs font-bold text-orange-600">
@@ -116,7 +123,8 @@ export default function OthersPage() {
                 </div>
               </motion.article>
             </Link>
-          ))}
+          );
+        })}
         </div>
       )}
     </div>

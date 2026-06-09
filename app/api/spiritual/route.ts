@@ -1,33 +1,29 @@
 import { NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/mongodb';
 import SpiritualPost from '@/models/SpiritualPost';
 import { isAuthenticated } from '@/lib/authHelper';
+import { withDb } from '@/lib/withDb';
 
-export async function GET(request: Request) {
+export const GET = withDb(async (request: Request) => {
   try {
-    await dbConnect();
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
 
     const query: any = {};
-    if (category && category !== 'all') {
-      query.category = category;
-    }
+    if (category && category !== 'all') query.category = category;
 
     const posts = await SpiritualPost.find(query).sort({ createdAt: -1 });
     return NextResponse.json({ success: true, count: posts.length, data: posts });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
   }
-}
+});
 
-export async function POST(request: Request) {
+export const POST = withDb(async (request: Request) => {
   try {
     if (!(await isAuthenticated())) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await dbConnect();
     const body = await request.json();
     const { title, content, category, image } = body;
 
@@ -40,4 +36,4 @@ export async function POST(request: Request) {
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
   }
-}
+});

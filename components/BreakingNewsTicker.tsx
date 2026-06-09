@@ -6,12 +6,13 @@ import { useLanguage } from '@/context/LanguageContext';
 
 interface NewsItem {
   _id: string;
-  title: string;
+  titleTamil: string;
+  titleEnglish: string;
 }
 
 export default function BreakingNewsTicker() {
   const [news, setNews] = useState<NewsItem[]>([]);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     async function fetchNews() {
@@ -46,7 +47,7 @@ export default function BreakingNewsTicker() {
               className="hover:text-red-700 hover:underline font-medium flex items-center gap-2"
             >
               <span>✦</span>
-              <span>{t(item.title)}</span>
+              <span>{language === 'ta' ? (item.titleTamil || item.titleEnglish) : (item.titleEnglish || item.titleTamil)}</span>
             </Link>
           ))}
         </div>

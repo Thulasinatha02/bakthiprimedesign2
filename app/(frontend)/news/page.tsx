@@ -4,17 +4,22 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Calendar, Tag, Search, AlertCircle } from 'lucide-react';
+import { Calendar, Tag, Search, AlertCircle, Play } from 'lucide-react';
 import { GridSkeleton } from '@/components/LoadingSkeleton';
 import { useLanguage } from '@/context/LanguageContext';
 
 interface NewsItem {
   _id: string;
-  title: string;
-  content: string;
-  image: string;
+  titleTamil: string;
+  titleEnglish: string;
+  descriptionTamil: string;
+  descriptionEnglish: string;
   category: string;
+  image: string;
+  youtubeUrl: string;
+  youtubeVideoId: string;
   createdAt: string;
+  publishDate: string;
 }
 
 function NewsListContent() {
@@ -24,19 +29,22 @@ function NewsListContent() {
   
   const initialSearch = searchParams.get('search') || '';
   const initialCategory = searchParams.get('category') || 'all';
+  const initialHasVideo = searchParams.get('hasVideo') === 'true';
 
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  const [hasVideo, setHasVideo] = useState(initialHasVideo);
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const categories = [
-    { label: t('அனைத்தும்'), value: 'all' },
-    { label: t('ஆன்மிகம்'), value: 'Spiritual' },
-    { label: t('ஜோதிடம்'), value: 'Astrology' },
-    { label: t('பொதுச்செய்தி'), value: 'News' },
-    { label: t('விளையாட்டு'), value: 'Sports' },
-    { label: t('சினிமா'), value: 'Cinema' }
+    { label: t('All'), value: 'all' },
+    { label: t('Spiritual'), value: 'Spiritual' },
+    { label: t('Politics'), value: 'Politics' },
+    { label: t('Education'), value: 'Education' },
+    { label: t('Sports'), value: 'Sports' },
+    { label: t('Technology'), value: 'Technology' },
+    { label: t('Cinema'), value: 'Cinema' }
   ];
 
   const fetchNews = async () => {
@@ -48,6 +56,9 @@ function NewsListContent() {
       }
       if (searchQuery.trim()) {
         url += `search=${encodeURIComponent(searchQuery.trim())}&`;
+      }
+      if (hasVideo) {
+        url += 'hasVideo=true&';
       }
       const res = await fetch(url);
       const json = await res.json();
@@ -63,16 +74,21 @@ function NewsListContent() {
 
   useEffect(() => {
     fetchNews();
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory, searchQuery, hasVideo]);
 
   useEffect(() => {
     setSearchQuery(searchParams.get('search') || '');
     setSelectedCategory(searchParams.get('category') || 'all');
+    setHasVideo(searchParams.get('hasVideo') === 'true');
   }, [searchParams]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push(`/news?search=${encodeURIComponent(searchQuery)}&category=${selectedCategory}`);
+    let url = `/news?search=${encodeURIComponent(searchQuery)}&category=${selectedCategory}`;
+    if (hasVideo) {
+      url += '&hasVideo=true';
+    }
+    router.push(url);
   };
 
   return (
@@ -84,7 +100,7 @@ function NewsListContent() {
             {t('செய்தித் தொகுப்பு')}
           </span>
           <h1 className="text-3xl font-extrabold text-amber-950 font-sans tracking-wide">
-            {t('பக்தி செய்திகள் (News Feed)')}
+            {language === 'ta' ? 'தமிழ் & ஆங்கில செய்திகள்' : 'Bakthi Prime News Feed'}
           </h1>
         </div>
 
@@ -102,8 +118,22 @@ function NewsListContent() {
       </div>
 
       {/* Filter and Categories Aligned */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-amber-50/30 p-4 rounded-2xl border border-amber-100/50">
-        <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">{language === 'ta' ? 'வடிகட்டு:' : 'Filter:'}</span>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-amber-50/30 p-4 rounded-2xl border border-amber-100/50">
+        <div className="flex items-center gap-4">
+          <span className="text-xs font-bold text-amber-900 uppercase tracking-wider">{language === 'ta' ? 'வடிகட்டு:' : 'Filter:'}</span>
+          
+          {/* Has Video Filter Checkbox */}
+          <label className="flex items-center gap-2 text-xs font-bold text-stone-600 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={hasVideo}
+              onChange={(e) => setHasVideo(e.target.checked)}
+              className="w-4 h-4 accent-amber-600"
+            />
+            <span>{language === 'ta' ? 'வீடியோ செய்திகள் மட்டும்' : 'Video news only'}</span>
+          </label>
+        </div>
+
         <div className="flex flex-wrap gap-2">
           {categories.map((cat) => (
             <button
@@ -131,50 +161,61 @@ function NewsListContent() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {news.map((item) => (
-            <Link key={item._id} href={`/news/${item._id}`}>
-              <motion.article
-                whileHover={{ y: -5 }}
-                className="bg-white rounded-2xl shadow-sm border border-amber-100/60 overflow-hidden flex flex-col justify-between h-full cursor-pointer group transition-all duration-300 hover:shadow-md"
-              >
-                <div>
-                  {/* Image */}
-                  {item.image && (
-                    <div className="relative aspect-video overflow-hidden bg-stone-100">
-                      <img
-                        src={item.image}
-                        alt={t(item.title)}
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-                      />
-                      <div className="absolute top-4 left-4 px-2 py-0.5 rounded bg-amber-500 text-amber-950 text-[10px] font-bold uppercase tracking-wider">
-                        {t(item.category === 'Spiritual' ? 'ஆன்மிகம்' : item.category === 'Astrology' ? 'ஜோதிடம்' : item.category)}
+          {news.map((item) => {
+            const title = language === 'ta' ? item.titleTamil : item.titleEnglish;
+            const description = language === 'ta' ? item.descriptionTamil : item.descriptionEnglish;
+            return (
+              <Link key={item._id} href={`/news/${item._id}`}>
+                <motion.article
+                  whileHover={{ y: -5 }}
+                  className="bg-white rounded-2xl shadow-sm border border-amber-100/60 overflow-hidden flex flex-col justify-between h-full cursor-pointer group transition-all duration-300 hover:shadow-md"
+                >
+                  <div>
+                    {/* Image */}
+                    {item.image && (
+                      <div className="relative aspect-video overflow-hidden bg-stone-100">
+                        <img
+                          src={item.image}
+                          alt={title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                        />
+                        <div className="absolute top-4 left-4 px-2 py-0.5 rounded bg-amber-500 text-amber-950 text-[10px] font-bold uppercase tracking-wider shadow">
+                          {t(item.category)}
+                        </div>
+                        {item.youtubeVideoId && (
+                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                            <div className="w-10 h-10 rounded-full bg-red-650 text-white flex items-center justify-center shadow">
+                              <Play className="w-4 h-4 fill-current translate-x-0.5" />
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* Body */}
-                  <div className="p-6 space-y-3">
-                    <div className="flex items-center gap-1.5 text-[10px] text-stone-400 font-bold uppercase">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>
-                        {new Date(item.createdAt).toLocaleDateString(language === 'ta' ? 'ta-IN' : 'en-US', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        })}
-                      </span>
+                    {/* Body */}
+                    <div className="p-6 space-y-3">
+                      <div className="flex items-center gap-1.5 text-[10px] text-stone-400 font-bold uppercase">
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span>
+                          {new Date(item.publishDate || item.createdAt).toLocaleDateString(language === 'ta' ? 'ta-IN' : 'en-US', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
+                          })}
+                        </span>
+                      </div>
+                      <h2 className="font-extrabold text-amber-950 text-base leading-snug line-clamp-2 group-hover:text-orange-600 transition">
+                        {title}
+                      </h2>
+                      <p className="text-stone-500 text-xs line-clamp-3 leading-relaxed font-semibold">
+                        {description}
+                      </p>
                     </div>
-                    <h2 className="font-extrabold text-amber-950 text-base leading-snug line-clamp-2 group-hover:text-orange-600 transition">
-                      {t(item.title)}
-                    </h2>
-                    <p className="text-stone-500 text-xs line-clamp-3 leading-relaxed font-semibold">
-                      {t(item.content)}
-                    </p>
                   </div>
-                </div>
-              </motion.article>
-            </Link>
-          ))}
+                </motion.article>
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

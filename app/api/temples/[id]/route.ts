@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server';
-import { dbConnect } from '@/lib/mongodb';
 import Temple from '@/models/Temple';
 import { isAuthenticated } from '@/lib/authHelper';
+import { withDb } from '@/lib/withDb';
 
 interface Params {
   params: Promise<{ id: string }>;
 }
 
-export async function GET(request: Request, { params }: Params) {
+export const GET = withDb(async (request: Request, { params }: Params) => {
   try {
-    await dbConnect();
     const { id } = await params;
     const temple = await Temple.findById(id);
 
@@ -21,15 +20,14 @@ export async function GET(request: Request, { params }: Params) {
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
   }
-}
+});
 
-export async function PUT(request: Request, { params }: Params) {
+export const PUT = withDb(async (request: Request, { params }: Params) => {
   try {
     if (!(await isAuthenticated())) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await dbConnect();
     const { id } = await params;
     const body = await request.json();
 
@@ -46,15 +44,14 @@ export async function PUT(request: Request, { params }: Params) {
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
   }
-}
+});
 
-export async function DELETE(request: Request, { params }: Params) {
+export const DELETE = withDb(async (request: Request, { params }: Params) => {
   try {
     if (!(await isAuthenticated())) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await dbConnect();
     const { id } = await params;
     const deletedTemple = await Temple.findByIdAndDelete(id);
 
@@ -66,4 +63,4 @@ export async function DELETE(request: Request, { params }: Params) {
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
   }
-}
+});

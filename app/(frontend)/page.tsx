@@ -1,22 +1,34 @@
 import BreakingNewsTicker from '@/components/BreakingNewsTicker';
-import HeroNewsSection from '@/components/HeroNewsSection';
-import VideoSection from '@/components/VideoSection';
+import HeroSlider from '@/components/HeroSlider';
+import ImportantNewsSection from '@/components/ImportantNewsSection';
+import LatestNewsSlider from '@/components/LatestNewsSlider';
+
 import RasiGrid from '@/components/RasiGrid';
 
 export default function HomePage() {
   return (
     <div className="space-y-6 pb-12">
-      {/* 1. Breaking News Ticker */}
+      {/* Breaking News Ticker */}
       <BreakingNewsTicker />
 
-      {/* 2. Hero & News Category Section */}
-      <HeroNewsSection />
+      {/* Hero Slider */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2">
+        <HeroSlider />
+      </div>
 
-      {/* 3. Zodiac 12 Rasi Palan Section */}
+      {/* Important News Feed */}
+      <ImportantNewsSection />
+
+      {/* Latest News Slider */}
+      <LatestNewsSlider />
+
+
+
+
+
+      {/* Zodiac 12 Rasi Palan Section */}
       <RasiGrid />
-
-      {/* 4. Devotional Video Section */}
-      <VideoSection />
     </div>
   );
 }
+

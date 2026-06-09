@@ -74,8 +74,8 @@ export default function Header() {
   return (
     <header
       className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled
-          ? 'bg-amber-900/95 text-white shadow-lg backdrop-blur-md border-b border-amber-800/50'
-          : 'bg-gradient-to-r from-red-800 via-orange-700 to-amber-800 text-white shadow-md'
+        ? 'bg-amber-900/95 text-white shadow-lg backdrop-blur-md border-b border-amber-800/50'
+        : 'bg-gradient-to-r from-red-800 via-orange-700 to-amber-800 text-white shadow-md'
         }`}
     >
       {/* Decoration line */}
@@ -192,13 +192,7 @@ export default function Header() {
               </button>
             </div>
 
-            {/* Admin / Dashboard */}
-            <Link
-              href={isAdmin ? '/admin/dashboard' : '/admin/login'}
-              className="px-3 py-1.5 rounded-full text-[11px] font-bold bg-amber-400 text-amber-950 hover:bg-amber-300 transition border border-amber-300 shadow-md whitespace-nowrap"
-            >
-              {isAdmin ? t('DASHBOARD') : t('ADMIN')}
-            </Link>
+
           </div>
 
           {/* ── Mobile / Tablet right bar ── */}

@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verifyToken } from '@/lib/jwt';
-import { dbConnect } from '@/lib/mongodb';
 import User from '@/models/User';
+import { withDb } from '@/lib/withDb';
 
-export async function GET() {
+export const GET = withDb(async () => {
   try {
-    await dbConnect();
     const cookieStore = await cookies();
     const token = cookieStore.get('token')?.value;
 
@@ -28,4 +27,4 @@ export async function GET() {
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
   }
-}
+});

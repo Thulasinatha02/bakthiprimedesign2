@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { dbConnect } from '@/lib/mongodb';
+import { withDb } from '@/lib/withDb';
 import User from '@/models/User';
 import News from '@/models/News';
 import Video from '@/models/Video';
@@ -25,9 +25,8 @@ const rasisList = [
   { name: 'மீனம்', key: 'pisces' }
 ];
 
-export async function GET() {
+export const GET = withDb(async () => {
   try {
-    await dbConnect();
 
     // 1. Seed Admin User
     const adminExists = await User.findOne({ username: 'admin' });
@@ -122,44 +121,116 @@ export async function GET() {
       console.log('Seeded Rasi Palan');
     }
 
-    // 3. Seed News if empty
-    const newsCount = await News.countDocuments();
-    if (newsCount === 0) {
-      const mockNews = [
-        {
-          title: 'வைகாசி விசாக பெருவிழா: திருச்செந்தூர் முருகன் கோயிலில் பக்தர்கள் அலைமோதும் கூட்டம்!',
-          content: 'வைகாசி விசாக திருநாளை முன்னிட்டு அறுபடை வீடுகளில் ஒன்றான திருச்செந்தூர் சுப்பிரமணிய சுவாமி திருக்கோயிலில் ஆயிரக்கணக்கான பக்தர்கள் குவிந்துள்ளனர். இன்று காலை முதலே நீண்ட வரிசையில் நின்று முருகப் பெருமானை தரிசனம் செய்து வருகின்றனர். பக்தர்கள் வசதிக்காக சிறப்பு போக்குவரத்து மற்றும் குடிநீர் வசதிகள் செய்யப்பட்டுள்ளன.',
-          category: 'Spiritual',
-          image: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&q=80&w=800'
-        },
-        {
-          title: 'ஜூன் மாத முக்கிய விரத நாட்கள்: பிரதோஷம், கிருத்திகை மற்றும் சஷ்டி எப்போது?',
-          content: 'நடப்பு ஜூன் மாதத்தில் வரவிருக்கும் ஆன்மிக விரத நாட்களின் பட்டியல் இதோ. பிரதோஷம், கிருத்திகை, அமாவாசை மற்றும் சஷ்டி ஆகிய முக்கிய நாட்களில் செய்ய வேண்டிய வழிபாட்டு முறைகள் மற்றும் அதன் பலன்கள் குறித்து விரிவாக இந்த தொகுப்பில் காணலாம்.',
-          category: 'Astrology',
-          image: 'https://images.unsplash.com/photo-1609137982420-b18a56d68ae6?auto=format&fit=crop&q=80&w=800'
-        },
-        {
-          title: 'மதுரை மீனாட்சி அம்மன் கோவிலில் ஜூன் 10 முதல் கோடை திருவிழா தொடக்கம்',
-          content: 'உலக புகழ்பெற்ற மதுரை மீனாட்சி சுந்தரேஸ்வரர் திருக்கோவிலில் இந்த ஆண்டுக்கான கோடை வசந்த திருவிழா ஜூன் 10 ஆம் தேதி கொடியேற்றத்துடன் தொடங்குகிறது. 10 நாட்கள் நடைபெறும் இத்திருவிழாவில் தினமும் மீனாட்சி அம்மனும் சுந்தரேஸ்வரரும் பல்வேறு வாகனங்களில் எழுந்தருளி வீதி உலா வருவர்.',
-          category: 'Spiritual',
-          image: 'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&q=80&w=800'
-        },
-        {
-          title: 'குரு பெயர்ச்சி பலன்கள் 2026: இந்த 5 ராசிகளுக்கு அதிர்ஷ்ட மழை பொழியும்!',
-          content: '2026 ஆம் ஆண்டு நிகழும் குரு பெயர்ச்சியால் எந்தெந்த ராசிகளுக்கு அபரிமிதமான நற்பலன்கள் கிடைக்கப் போகிறது என்பதை ஜோதிட வல்லுநர்கள் கணித்துள்ளனர். குறிப்பாக ரிஷபம், சிம்மம், விருச்சிக ராசியினருக்குப் புதிய தொழில் வாய்ப்புகள் மற்றும் பண வரவுகள் அதிகரிக்கும் எனத் தெரிகிறது.',
-          category: 'Astrology',
-          image: 'https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?auto=format&fit=crop&q=80&w=800'
-        },
-        {
-          title: 'தமிழகத்தின் புகழ்பெற்ற ஆன்மிக திருத்தலங்களின் வரலாறும் சிறப்புகளும்',
-          content: 'தமிழ்நாடு ஆன்மிக பூமியாக திகழ்கிறது. இங்குள்ள பழமையான மற்றும் வரலாற்று சிறப்புமிக்க கோவில்களின் கட்டிடக்கலை மற்றும் புராண வரலாறுகள் நம்மை வியக்க வைக்கின்றன. இந்த வாரம் தஞ்சை பெரிய கோவில் மற்றும் ஸ்ரீரங்கம் ரங்கநாதர் கோவிலின் அறியப்படாத தகவல்களை காண்போம்.',
-          category: 'Spiritual',
-          image: 'https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&q=80&w=800'
-        }
-      ];
-      await News.insertMany(mockNews);
-      console.log('Seeded News');
-    }
+    // 3. Clear and Seed News
+    await News.deleteMany({});
+    const mockNews = [
+      {
+        titleTamil: 'வைகாசி விசாக பெருவிழா: திருச்செந்தூர் முருகன் கோயிலில் பக்தர்கள் அலைமோதும் கூட்டம்!',
+        titleEnglish: 'Vaikasi Visakam Festival: Huge crowd of devotees at Thiruchendur Murugan Temple!',
+        descriptionTamil: 'வைகாசி விசாக திருநாளை முன்னிட்டு அறுபடை வீடுகளில் ஒன்றான திருச்செந்தூர் சுப்பிரமணிய சுவாமி திருக்கோயிலில் ஆயிரக்கணக்கான பக்தர்கள் குவிந்துள்ளனர். இன்று காலை முதலே நீண்ட வரிசையில் நின்று முருகப் பெருமானை தரிசனம் செய்து வருகின்றனர். பக்தர்கள் வசதிக்காக சிறப்பு போக்குவரத்து மற்றும் குடிநீர் வசதிகள் செய்யப்பட்டுள்ளன.',
+        descriptionEnglish: 'Thousands of devotees gathered at the Thiruchendur Subramanya Swamy Temple, one of the six abodes of Lord Murugan, for Vaikasi Visakam. Devotees have been standing in long lines since morning to get darshan. Special transport and drinking water facilities have been arranged.',
+        category: 'Spiritual',
+        image: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&q=80&w=800',
+        isImportant: true,
+        isLatest: true,
+        publishDate: new Date(),
+      },
+      {
+        titleTamil: 'மதுரை மீனாட்சி அம்மன் கோவிலில் வசந்த உற்சவம் ஜூன் 10 முதல் தொடக்கம்',
+        titleEnglish: 'Madurai Meenakshi Temple Vasantha Utsavam Starts from June 10',
+        descriptionTamil: 'உலக புகழ்பெற்ற மதுரை மீனாட்சி சுந்தரேஸ்வரர் திருக்கோவிலில் இந்த ஆண்டுக்கான கோடை வசந்த திருவிழா ஜூன் 10 ஆம் தேதி கொடியேற்றத்துடன் தொடங்குகிறது. 10 நாட்கள் நடைபெறும் இத்திருவிழாவில் தினமும் மீனாட்சி அம்மனும் சுந்தரேஸ்வரரும் பல்வேறு வாகனங்களில் எழுந்தருளி வீதி உலா வருவர்.',
+        descriptionEnglish: 'The annual summer Vasantha Utsavam of the world-famous Madurai Meenakshi Sundareswarar Temple begins with flag hoisting on June 10. During the 10-day festival, Goddess Meenakshi and Lord Sundareswarar will progress in street processions daily.',
+        category: 'Spiritual',
+        image: 'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&q=80&w=800',
+        isImportant: true,
+        isLatest: false,
+        publishDate: new Date(),
+      },
+      {
+        titleTamil: 'அதிநவீன தொழில்நுட்பங்களுடன் இஸ்ரோவின் புதிய செயற்கைக்கோள் ஏவ தயாராகிறது',
+        titleEnglish: 'ISRO New High-Tech Satellite Prepared for Launch',
+        descriptionTamil: 'இந்திய விண்வெளி ஆராய்ச்சி நிறுவனம் (இஸ்ரோ) தகவல் தொடர்பு மற்றும் புவி கண்காணிப்பு வசதிக்காக அதிநவீன தொழில்நுட்பங்களுடன் வடிவமைக்கப்பட்ட புதிய செயற்கைக்கோளை விண்ணில் செலுத்த அனைத்து ஏற்பாடுகளையும் செய்துள்ளது. இது நாட்டின் இணைய வேகத்தை கணிசமாக அதிகரிக்கும்.',
+        descriptionEnglish: 'The Indian Space Research Organisation (ISRO) has made all arrangements to launch a new high-tech satellite designed for communications and earth observation. This will significantly boost internet speeds across the country.',
+        category: 'Technology',
+        image: 'https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?auto=format&fit=crop&q=80&w=800',
+        isImportant: false,
+        isLatest: true,
+        publishDate: new Date(),
+      },
+      {
+        titleTamil: 'கிரிக்கெட் உலகக்கோப்பை: இந்திய அணி அபார வெற்றி பெற்று அரையிறுதிக்கு தகுதி பெற்றது',
+        titleEnglish: 'Cricket World Cup: Indian Team Enters Semifinals with Spectacular Victory',
+        descriptionTamil: 'இன்றைய பரபரப்பான கிரிக்கெட் போட்டியில் இந்திய அணி அபார ஆட்டத்தை வெளிப்படுத்தி வெற்றி பெற்று அரையிறுதிச் சுற்றுக்கு முன்னேறியுள்ளது. கடைசி ஓவரில் பந்துவீச்சாளர்கள் சிறப்பாக செயல்பட்டு அணியின் வெற்றியை உறுதி செய்தனர்.',
+        descriptionEnglish: 'In today\'s thrilling cricket match, the Indian team delivered a spectacular performance to win and advance to the semifinal round. The bowlers performed exceptionally well in the final over to secure victory.',
+        category: 'Sports',
+        image: 'https://images.unsplash.com/photo-1540747737956-378724044282?auto=format&fit=crop&q=80&w=800',
+        isImportant: false,
+        isLatest: true,
+        publishDate: new Date(),
+      },
+      {
+        titleTamil: 'மாநில அளவிலான யோகா போட்டிகளில் பள்ளி மாணவர்கள் சாதனை',
+        titleEnglish: 'School Students Achieve Success in State-Level Yoga Competition',
+        descriptionTamil: 'தமிழக அளவில் நடைபெற்ற பள்ளி மாணவர்களுக்கான யோகா போட்டிகளில் அரசு பள்ளி மாணவர்கள் பல்வேறு தங்கப் பதக்கங்களை வென்று சாதனை படைத்துள்ளனர். இவர்களுக்கு கல்வித்துறை அதிகாரிகள் வாழ்த்துக்களை தெரிவித்துள்ளனர்.',
+        descriptionEnglish: 'Government school students won several gold medals and achieved success at the state-level yoga competitions held for school children. Education department officials extended their congratulations.',
+        category: 'Education',
+        image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=800',
+        isImportant: false,
+        isLatest: true,
+        publishDate: new Date(),
+      },
+      {
+        titleTamil: 'பிரபல நடிகரின் புதிய திரைப்படம் பாக்ஸ் ஆபீஸில் சாதனை படைத்து வருகிறது',
+        titleEnglish: 'Popular Actor\'s New Film Creates Box Office Records',
+        descriptionTamil: 'கடந்த வாரம் திரையரங்குகளில் வெளியான முன்னணி நடிகரின் திரைப்படம் உலகம் முழுவதும் பெரும் வரவேற்பைப் பெற்று வசூல் சாதனை படைத்து வருகிறது. படத்தின் கதை மற்றும் இசை ரசிகர்களை மிகவும் கவர்ந்துள்ளது.',
+        descriptionEnglish: 'The movie of a leading actor released in theaters last week has received overwhelming response worldwide, breaking box office records. The film\'s story and music have deeply captivated fans.',
+        category: 'Cinema',
+        image: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&q=80&w=800',
+        isImportant: true,
+        isLatest: false,
+        publishDate: new Date(),
+      },
+      {
+        titleTamil: 'மாநில பட்ஜெட்டில் விவசாயிகளுக்கு புதிய சலுகைகள் அறிவிப்பு',
+        titleEnglish: 'New Benefits for Farmers Announced in State Budget',
+        descriptionTamil: 'தமிழக சட்டமன்றத்தில் தாக்கல் செய்யப்பட்ட பட்ஜெட்டில், விவசாயிகளின் பயிர் கடன்களை தள்ளுபடி செய்யவும், புதிய நீர்ப்பாசன திட்டங்களை செயல்படுத்தவும் முக்கிய நிதியுதவிகள் ஒதுக்கப்பட்டு அறிவிக்கப்பட்டுள்ளன.',
+        descriptionEnglish: 'In the budget presented in the state assembly, key financial allocations have been announced to waive crop loans for farmers and implement new irrigation schemes.',
+        category: 'Politics',
+        image: 'https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&q=80&w=800',
+        isImportant: true,
+        isLatest: false,
+        publishDate: new Date(),
+      },
+      {
+        titleTamil: 'ஸ்ரீ வெங்கடேச சுப்ரபாதம் | பக்தி பாடல் வீடியோ',
+        titleEnglish: 'Sri Venkateswara Suprabhatam | Devotional Video',
+        descriptionTamil: 'காலை நேரத்தை தெய்வீகமாகத் தொடங்க திருப்பதி வெங்கடாசலபதியின் சுப்ரபாதம் பாடல். இதனை தினசரி கேட்டு எம்பெருமான் அருளைப் பெறலாம்.',
+        descriptionEnglish: 'Sri Venkateswara Suprabhatam to start your morning on a divine note. Listen to this daily and seek the blessings of the Lord.',
+        category: 'Spiritual',
+        image: 'https://img.youtube.com/vi/kR1iG24iZpE/hqdefault.jpg',
+        youtubeUrl: 'https://www.youtube.com/watch?v=kR1iG24iZpE',
+        youtubeVideoId: 'kR1iG24iZpE',
+        isImportant: false,
+        isLatest: true,
+        publishDate: new Date(),
+      },
+      {
+        titleTamil: 'கந்த சஷ்டி கவசம் | முருகனின் அருள் தரும் கவசம்',
+        titleEnglish: 'Kandha Sashti Kavasam | Lord Murugan Devotional Song',
+        descriptionTamil: 'முருகப் பெருமானின் கந்த சஷ்டி கவசம் பாடல். தீவினைகளை நீக்கி நல்வாழ்வு தரும் தெய்வீகப் பாடல்.',
+        descriptionEnglish: 'Lord Murugan\'s Kandha Sashti Kavasam song. A divine hymn that removes negativity and brings good fortune.',
+        category: 'Spiritual',
+        image: 'https://img.youtube.com/vi/n4rLz0_W_H4/hqdefault.jpg',
+        youtubeUrl: 'https://www.youtube.com/watch?v=n4rLz0_W_H4',
+        youtubeVideoId: 'n4rLz0_W_H4',
+        isImportant: true,
+        isLatest: true,
+        publishDate: new Date(),
+      }
+    ];
+    await News.insertMany(mockNews);
+    console.log('Seeded Bilingual News');
+
 
     // 4. Seed Videos if empty
     const videoCount = await Video.countDocuments();
@@ -294,4 +365,4 @@ export async function GET() {
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Server error' }, { status: 500 });
   }
-}
+});
