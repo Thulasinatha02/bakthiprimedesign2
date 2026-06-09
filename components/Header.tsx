@@ -192,6 +192,7 @@ export default function Header() {
               </button>
             </div>
 
+            {/* Admin / Dashboard */}
 
           </div>
 
@@ -205,12 +206,6 @@ export default function Header() {
               <span>{language === 'ta' ? 'EN' : 'தமிழ்'}</span>
             </button>
 
-            <Link
-              href={isAdmin ? '/admin/dashboard' : '/admin/login'}
-              className="px-2.5 py-1.5 rounded-full text-[10px] font-bold bg-amber-400 text-amber-950 hover:bg-amber-300 transition border border-amber-300 shadow-md"
-            >
-              {isAdmin ? t('DASHBOARD') : t('ADMIN')}
-            </Link>
 
             <button
               onClick={() => setIsOpen(!isOpen)}
