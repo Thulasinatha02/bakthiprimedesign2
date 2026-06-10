@@ -9,7 +9,7 @@ export default function FrontendLayout({
   return (
     <>
       <Header />
-      <main className="flex-grow">{children}</main>
+      <main className="flex-grow pt-[57px] lg:pt-[65px]">{children}</main>
       <Footer />
     </>
   );

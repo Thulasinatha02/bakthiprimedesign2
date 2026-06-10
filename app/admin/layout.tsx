@@ -6,7 +6,8 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { 
   LayoutDashboard, Newspaper, Video, Users, 
-  MapPin, Calendar, LogOut, Home, KeyRound, Sparkles
+  MapPin, Calendar, LogOut, Home, KeyRound, Sparkles,
+  Image as ImageIcon, Zap, Clock
 } from 'lucide-react';
 
 export default function AdminLayout({
@@ -59,6 +60,9 @@ export default function AdminLayout({
 
   const menuItems = [
     { name: 'கட்டுப்பாட்டு பலகை (Dashboard)', href: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'ஹீரோ ஸ்லைடர் (Hero Slider)', href: '/admin/hero-slider', icon: ImageIcon },
+    { name: 'முக்கிய செய்திகள் (Important News)', href: '/admin/important-news', icon: Zap },
+    { name: 'அண்மைச் செய்திகள் (Latest News)', href: '/admin/latest-news', icon: Clock },
     { name: 'செய்திகள் (News)', href: '/admin/news', icon: Newspaper },
     { name: 'வீடியோக்கள் (Videos)', href: '/admin/videos', icon: Video },
     { name: 'ராசிபலன் (Rasi Palan)', href: '/admin/rasipalan', icon: Sparkles },

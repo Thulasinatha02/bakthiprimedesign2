@@ -4,44 +4,67 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-const slides = [
-  {
-    image: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&q=80&w=1200',
-    title: 'தெய்வீக அருள் பெருகும் பக்தி மார்க்கம்',
-    description: 'தினசரி வழிபாடு மற்றும் ஆன்மிக செய்திகளுடன் உங்கள் நாளைத் தொடங்குங்கள்.',
-    badge: 'ஆன்மிகம்'
-  },
-  {
-    image: 'https://images.unsplash.com/photo-1590050752117-238cb0612b1b?auto=format&fit=crop&q=80&w=1200',
-    title: 'பிரபல ஆலயங்களின் தல வரலாறும் தரிசனமும்',
-    description: 'தமிழகத்தின் வரலாற்றுச் சிறப்புமிக்க திருத்தலங்களின் அரிய தகவல்கள் மற்றும் தரிசன நேரங்கள்.',
-    badge: 'திருத்தலங்கள்'
-  },
-  {
-    image: 'https://images.unsplash.com/photo-1609137982420-b18a56d68ae6?auto=format&fit=crop&q=80&w=1200',
-    title: 'துல்லியமான தினசரி ராசிபலன்கள் 2026',
-    description: 'உங்கள் ராசிக்கான இன்றைய பலன்கள் மற்றும் பரிகாரங்களை அறிந்து கொள்ளுங்கள்.',
-    badge: 'ஜோதிடம்'
-  }
-];
+interface Slide {
+  image: string;
+  title: string;
+  description: string;
+  badge: string;
+}
 
 export default function HeroSlider() {
+  const [slides, setSlides] = useState<Slide[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch slides from API
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % slides.length);
-    }, 6000);
-    return () => clearInterval(timer);
+    const fetchSlides = async () => {
+      try {
+        const res = await fetch('/api/hero-slides');
+        const json = await res.json();
+        if (json.success) {
+          setSlides(json.data);
+        } else {
+          console.error('Failed to load hero slides');
+        }
+      } catch (err) {
+        console.error('Error fetching hero slides:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSlides();
   }, []);
 
+  // Auto slide timer (depends on slides length)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex(prev => (prev + 1) % (slides.length || 1));
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [slides.length]);
+
   const handlePrev = () => {
-    setCurrentIndex((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
+    setCurrentIndex(prev => (prev === 0 ? slides.length - 1 : prev - 1));
   };
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % slides.length);
+    setCurrentIndex(prev => (prev + 1) % slides.length);
   };
+
+  // Show skeleton while loading — preserves layout height so ImportantNews doesn't jump up
+  if (loading || slides.length === 0) {
+    return (
+      <div className="relative w-full h-[350px] sm:h-[480px] bg-stone-900 overflow-hidden shadow-xl border-b border-amber-900/30 animate-pulse">
+        <div className="absolute inset-0 bg-gradient-to-br from-stone-800 via-stone-900 to-stone-950" />
+        <div className="absolute inset-0 flex flex-col justify-end p-6 sm:p-12 space-y-3">
+          <div className="h-5 w-24 rounded bg-amber-800/50" />
+          <div className="h-10 w-2/3 rounded-lg bg-stone-700/60" />
+          <div className="h-4 w-1/2 rounded bg-stone-700/40" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-[350px] sm:h-[480px] bg-stone-900 overflow-hidden shadow-xl border-b border-amber-900/30">
@@ -62,7 +85,7 @@ export default function HeroSlider() {
             className="w-full h-full object-cover brightness-[0.4]"
           />
 
-          {/* Slide Text Content Overlay */}
+          {/* Text Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-900/40 to-transparent flex flex-col justify-end p-6 sm:p-12">
             <div className="max-w-3xl space-y-3">
               <span className="inline-block px-3 py-1 rounded bg-amber-500 text-amber-950 text-xs font-bold uppercase tracking-wider">
@@ -105,12 +128,12 @@ export default function HeroSlider() {
 
       {/* Slide Indicators */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center space-x-2 z-10">
-        {slides.map((_, index) => (
+        {slides.map((_, idx) => (
           <button
-            key={index}
-            onClick={() => setCurrentIndex(index)}
+            key={idx}
+            onClick={() => setCurrentIndex(idx)}
             className={`w-2.5 h-2.5 rounded-full transition-all duration-300 cursor-pointer ${
-              index === currentIndex ? 'bg-amber-400 w-6' : 'bg-white/40'
+              idx === currentIndex ? 'bg-amber-400 w-6' : 'bg-white/40'
             }`}
           />
         ))}

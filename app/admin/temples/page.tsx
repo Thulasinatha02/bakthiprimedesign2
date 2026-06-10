@@ -26,6 +26,7 @@ export default function AdminTemplesPage() {
   const [deity, setDeity] = useState('');
   const [history, setHistory] = useState('');
   const [image, setImage] = useState('');
+  const [imageError, setImageError] = useState(false);
   const [timings, setTimings] = useState('');
 
   const fetchTemples = async () => {
@@ -58,6 +59,9 @@ export default function AdminTemplesPage() {
     setShowForm(true);
   };
 
+  const isGoogleImageUrl = (url: string) =>
+    /lh\d\.googleusercontent\.com|google\.com\/imgres|gstatic\.com/.test(url);
+
   const handleCancel = () => {
     setEditId(null);
     setName('');
@@ -65,6 +69,7 @@ export default function AdminTemplesPage() {
     setDeity('');
     setHistory('');
     setImage('');
+    setImageError(false);
     setTimings('');
     setShowForm(false);
   };
@@ -210,10 +215,45 @@ export default function AdminTemplesPage() {
                 <input
                   type="text"
                   value={image}
-                  onChange={(e) => setImage(e.target.value)}
+                  onChange={(e) => { setImage(e.target.value); setImageError(false); }}
                   placeholder="https://example.com/temple.jpg"
                   className="w-full bg-black/40 text-amber-100 placeholder-amber-200/20 px-4 py-3 rounded-xl border border-yellow-500/15 focus:outline-none focus:ring-2 focus:ring-amber-500"
                 />
+
+                {/* Live Preview */}
+                {image.trim() && (
+                  <div className="mt-2 rounded-xl overflow-hidden border border-yellow-500/20 bg-black/30">
+                    {isGoogleImageUrl(image) ? (
+                      <div className="px-4 py-3 text-[11px] text-amber-300 font-semibold flex items-start gap-2">
+                        <span className="text-lg leading-none">⚠️</span>
+                        <span>
+                          Google படங்கள் direct link ஆக வேலை செய்யாது (CORS தடை).<br />
+                          <span className="text-white/60">Please upload to </span>
+                          <a href="https://imgbb.com" target="_blank" rel="noreferrer" className="underline text-amber-400">imgbb.com</a>
+                          <span className="text-white/60"> or </span>
+                          <a href="https://postimages.org" target="_blank" rel="noreferrer" className="underline text-amber-400">postimages.org</a>
+                          <span className="text-white/60"> and paste that URL instead.</span>
+                        </span>
+                      </div>
+                    ) : imageError ? (
+                      <div className="px-4 py-3 text-[11px] text-red-400 font-semibold flex items-center gap-2">
+                        <span>❌</span> இந்த URL-ல் படம் ஏற்றப்படவில்லை. சரியான link பயன்படுத்தவும்.
+                      </div>
+                    ) : (
+                      <div className="relative aspect-video w-full">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={image}
+                          alt="Preview"
+                          onError={() => setImageError(true)}
+                          onLoad={() => setImageError(false)}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute bottom-2 right-2 bg-black/60 text-[10px] text-amber-200 px-2 py-0.5 rounded font-bold">Preview</div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
