@@ -12,40 +12,54 @@ interface VideoItem {
   thumbnail: string;
 }
 
+/**
+ * Extracts a YouTube video ID from ANY valid YouTube URL format:
+ *  - https://www.youtube.com/watch?v=VIDEO_ID
+ *  - https://youtu.be/VIDEO_ID
+ *  - https://m.youtube.com/watch?v=VIDEO_ID
+ *  - https://www.youtube.com/embed/VIDEO_ID
+ *  - https://youtube.com/shorts/VIDEO_ID
+ */
 const getVideoId = (url: string): string => {
   if (!url) return '';
 
-  // Already an embed URL like https://www.youtube.com/embed/VIDEO_ID
-  const embedMatch = url.match(/youtube\.com\/embed\/([^?&]+)/);
+  const embedMatch = url.match(/youtube\.com\/embed\/([^?&#]+)/);
   if (embedMatch) return embedMatch[1];
 
-  // Standard watch URL: https://www.youtube.com/watch?v=VIDEO_ID
-  const watchMatch = url.match(/[?&]v=([^&]+)/);
+  const shortsMatch = url.match(/youtube\.com\/shorts\/([^?&#]+)/);
+  if (shortsMatch) return shortsMatch[1];
+
+  const watchMatch = url.match(/[?&]v=([^&#]+)/);
   if (watchMatch) return watchMatch[1];
 
-  // Short URL: https://youtu.be/VIDEO_ID
-  const shortMatch = url.match(/youtu\.be\/([^?&]+)/);
+  const shortMatch = url.match(/youtu\.be\/([^?&#]+)/);
   if (shortMatch) return shortMatch[1];
 
-  // Mobile URL: https://m.youtube.com/watch?v=VIDEO_ID
-  const mobileMatch = url.match(/m\.youtube\.com\/watch\?v=([^&]+)/);
+  const mobileMatch = url.match(/m\.youtube\.com\/watch\?v=([^&#]+)/);
   if (mobileMatch) return mobileMatch[1];
 
   return '';
 };
 
+/**
+ * Builds a proper YouTube embed URL with privacy-enhanced mode
+ * for reliable inline playback.
+ */
 const getEmbedUrl = (url: string): string => {
   const id = getVideoId(url);
   if (!id) return '';
-  return `https://www.youtube.com/embed/${id}?rel=0&modestbranding=1`;
+  // Use youtube-nocookie.com for better privacy & fewer blocked embeds
+  return `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1&playsinline=1`;
 };
 
+/** Auto-generate thumbnail from any YouTube URL */
 const getThumbnail = (url: string, fallback: string): string => {
   const id = getVideoId(url);
   if (id) return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
   return fallback || '';
 };
 
+/** Build a standard watch URL for "open in YouTube" */
 const getWatchUrl = (url: string): string => {
   const id = getVideoId(url);
   return id ? `https://www.youtube.com/watch?v=${id}` : url;
@@ -94,6 +108,7 @@ export default function VideoSection() {
             const embedUrl = getEmbedUrl(video.youtubeUrl);
             const thumbnail = getThumbnail(video.youtubeUrl, video.thumbnail);
             const watchUrl = getWatchUrl(video.youtubeUrl);
+            const isActive = activeVideoId === video._id;
 
             return (
               <motion.div
@@ -103,30 +118,38 @@ export default function VideoSection() {
               >
                 {/* Media Player Container */}
                 <div className="relative aspect-video w-full bg-black overflow-hidden">
-                  {activeVideoId === video._id && embedUrl ? (
+                  {isActive && embedUrl ? (
                     <iframe
                       src={`${embedUrl}&autoplay=1`}
                       title={video.title}
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowFullScreen
+                      referrerPolicy="no-referrer-when-downgrade"
+                      loading="lazy"
                       className="absolute inset-0 w-full h-full border-0"
                     />
                   ) : (
                     <div className="relative w-full h-full">
                       {/* Thumbnail */}
-                      <img
-                        src={thumbnail}
-                        alt={video.title}
-                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500 brightness-90"
-                        onError={(e) => {
-                          // Fallback to default thumbnail if hqdefault fails
-                          const target = e.target as HTMLImageElement;
-                          const id = getVideoId(video.youtubeUrl);
-                          if (id && !target.src.includes('mqdefault')) {
-                            target.src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
-                          }
-                        }}
-                      />
+                      {thumbnail ? (
+                        <img
+                          src={thumbnail}
+                          alt={video.title}
+                          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition duration-500 brightness-90"
+                          onError={(e) => {
+                            // Fallback to lower quality if hqdefault fails
+                            const target = e.target as HTMLImageElement;
+                            const id = getVideoId(video.youtubeUrl);
+                            if (id && !target.src.includes('mqdefault')) {
+                              target.src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-amber-950 to-black flex items-center justify-center">
+                          <span className="text-amber-400/40 text-sm">No Preview</span>
+                        </div>
+                      )}
 
                       {/* Dark overlay */}
                       <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition duration-300" />

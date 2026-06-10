@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   Video,
@@ -9,6 +9,9 @@ import {
   Trash2,
   Plus,
   X,
+  Link as LinkIcon,
+  CheckCircle,
+  AlertCircle,
 } from 'lucide-react';
 
 interface VideoItem {
@@ -18,6 +21,47 @@ interface VideoItem {
   description: string;
   thumbnail: string;
 }
+
+/**
+ * Extracts a YouTube video ID from ANY valid YouTube URL format:
+ *  - https://www.youtube.com/watch?v=VIDEO_ID
+ *  - https://youtu.be/VIDEO_ID
+ *  - https://m.youtube.com/watch?v=VIDEO_ID
+ *  - https://www.youtube.com/embed/VIDEO_ID
+ *  - https://youtube.com/shorts/VIDEO_ID
+ */
+const getVideoId = (url: string): string => {
+  if (!url) return '';
+
+  // Embed URL
+  const embedMatch = url.match(/youtube\.com\/embed\/([^?&#]+)/);
+  if (embedMatch) return embedMatch[1];
+
+  // Shorts URL
+  const shortsMatch = url.match(/youtube\.com\/shorts\/([^?&#]+)/);
+  if (shortsMatch) return shortsMatch[1];
+
+  // Standard watch URL
+  const watchMatch = url.match(/[?&]v=([^&#]+)/);
+  if (watchMatch) return watchMatch[1];
+
+  // Short URL: https://youtu.be/VIDEO_ID
+  const shortMatch = url.match(/youtu\.be\/([^?&#]+)/);
+  if (shortMatch) return shortMatch[1];
+
+  // Mobile URL
+  const mobileMatch = url.match(/m\.youtube\.com\/watch\?v=([^&#]+)/);
+  if (mobileMatch) return mobileMatch[1];
+
+  return '';
+};
+
+/** Auto-generate YouTube thumbnail from any YouTube URL */
+const getAutoThumbnail = (url: string): string => {
+  const videoId = getVideoId(url);
+  if (!videoId) return '';
+  return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+};
 
 export default function AdminVideosPage() {
   const [videos, setVideos] = useState<VideoItem[]>([]);
@@ -30,35 +74,10 @@ export default function AdminVideosPage() {
   const [title, setTitle] = useState('');
   const [youtubeUrl, setYoutubeUrl] = useState('');
   const [description, setDescription] = useState('');
-  const [thumbnail, setThumbnail] = useState('');
 
-  // Extract YouTube Video ID
-  const getVideoId = (url: string) => {
-    if (!url) return '';
-
-    // Handle embed URL
-    if (url.includes('/embed/')) {
-      return url.split('/embed/')[1]?.split('?')[0];
-    }
-
-    // Handle watch URL
-    if (url.includes('v=')) {
-      return url.split('v=')[1]?.split('&')[0];
-    }
-
-    return '';
-  };
-
-  // Generate Thumbnail
-  const getThumbnail = (url: string) => {
-    const videoId = getVideoId(url);
-
-    if (!videoId) {
-      return '/placeholder.jpg';
-    }
-
-    return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-  };
+  // Derived: live preview of detected video ID + thumbnail
+  const detectedVideoId = useMemo(() => getVideoId(youtubeUrl), [youtubeUrl]);
+  const previewThumbnail = useMemo(() => getAutoThumbnail(youtubeUrl), [youtubeUrl]);
 
   const fetchVideos = async () => {
     setLoading(true);
@@ -87,7 +106,6 @@ export default function AdminVideosPage() {
     setTitle(item.title);
     setYoutubeUrl(item.youtubeUrl);
     setDescription(item.description);
-    setThumbnail(item.thumbnail);
 
     setShowForm(true);
   };
@@ -98,13 +116,15 @@ export default function AdminVideosPage() {
     setTitle('');
     setYoutubeUrl('');
     setDescription('');
-    setThumbnail('');
 
     setShowForm(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Auto-generate thumbnail from the YouTube URL
+    const thumbnail = getAutoThumbnail(youtubeUrl);
 
     const body = {
       title,
@@ -174,7 +194,7 @@ export default function AdminVideosPage() {
           </h1>
 
           <p className="text-stone-400 text-xs mt-1 font-semibold">
-            YouTube ஆன்மிக வீடியோக்களை நிர்வகிக்கவும்.
+            YouTube லிங்கை மட்டும் ஒட்டவும் — Thumbnail தானாக வரும்.
           </p>
         </div>
 
@@ -216,6 +236,68 @@ export default function AdminVideosPage() {
             className="space-y-4"
           >
 
+            {/* YouTube URL — PRIMARY INPUT */}
+            <div>
+              <label className="block mb-2 text-xs font-bold text-amber-200 uppercase">
+                <LinkIcon className="w-3.5 h-3.5 inline-block mr-1 -mt-0.5" />
+                YouTube வீடியோ லிங்க்
+              </label>
+
+              <input
+                type="text"
+                required
+                value={youtubeUrl}
+                onChange={(e) =>
+                  setYoutubeUrl(e.target.value)
+                }
+                placeholder="https://www.youtube.com/watch?v=xxxxx  அல்லது  https://youtu.be/xxxxx"
+                className="w-full bg-black/40 text-amber-100 px-4 py-3 rounded-xl border border-yellow-500/20 focus:outline-none focus:ring-2 focus:ring-amber-500"
+              />
+
+              {/* Live URL validation indicator */}
+              {youtubeUrl && (
+                <div className="flex items-center gap-2 mt-2">
+                  {detectedVideoId ? (
+                    <span className="text-emerald-400 text-xs flex items-center gap-1">
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      Video ID கண்டறியப்பட்டது: <code className="bg-black/40 px-1.5 py-0.5 rounded text-amber-300">{detectedVideoId}</code>
+                    </span>
+                  ) : (
+                    <span className="text-red-400 text-xs flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      சரியான YouTube லிங்கை உள்ளிடவும்
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Auto Thumbnail Preview */}
+            {previewThumbnail && (
+              <div>
+                <label className="block mb-2 text-xs font-bold text-stone-400 uppercase">
+                  தானியங்கு Thumbnail முன்னோட்டம்
+                </label>
+                <div className="relative aspect-video w-full max-w-sm rounded-xl overflow-hidden border border-yellow-500/20 bg-black">
+                  <img
+                    src={previewThumbnail}
+                    alt="Thumbnail preview"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      // Fallback to medium quality if hqdefault fails
+                      if (detectedVideoId && !target.src.includes('mqdefault')) {
+                        target.src = `https://img.youtube.com/vi/${detectedVideoId}/mqdefault.jpg`;
+                      }
+                    }}
+                  />
+                  <div className="absolute bottom-2 left-2 bg-black/70 text-emerald-400 text-[10px] font-bold px-2 py-1 rounded-md">
+                    ✓ Auto-fetched
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Title */}
             <div>
               <label className="block mb-2 text-xs font-bold text-amber-200 uppercase">
@@ -234,45 +316,10 @@ export default function AdminVideosPage() {
               />
             </div>
 
-            {/* YouTube URL */}
+            {/* Description (optional) */}
             <div>
               <label className="block mb-2 text-xs font-bold text-amber-200 uppercase">
-                YouTube Embed URL
-              </label>
-
-              <input
-                type="text"
-                required
-                value={youtubeUrl}
-                onChange={(e) =>
-                  setYoutubeUrl(e.target.value)
-                }
-                placeholder="https://www.youtube.com/embed/VIDEO_ID"
-                className="w-full bg-black/40 text-amber-100 px-4 py-3 rounded-xl border border-yellow-500/20 focus:outline-none focus:ring-2 focus:ring-amber-500"
-              />
-            </div>
-
-            {/* Thumbnail */}
-            <div>
-              <label className="block mb-2 text-xs font-bold text-amber-200 uppercase">
-                Thumbnail URL
-              </label>
-
-              <input
-                type="text"
-                value={thumbnail}
-                onChange={(e) =>
-                  setThumbnail(e.target.value)
-                }
-                placeholder="Optional"
-                className="w-full bg-black/40 text-amber-100 px-4 py-3 rounded-xl border border-yellow-500/20 focus:outline-none focus:ring-2 focus:ring-amber-500"
-              />
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="block mb-2 text-xs font-bold text-amber-200 uppercase">
-                Description
+                Description (விருப்பத்தேர்வு)
               </label>
 
               <textarea
@@ -298,7 +345,8 @@ export default function AdminVideosPage() {
 
               <button
                 type="submit"
-                className="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold"
+                disabled={!detectedVideoId}
+                className="px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-amber-950 font-bold disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {editId
                   ? 'Update Video'
@@ -321,67 +369,74 @@ export default function AdminVideosPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
-          {videos.map((video) => (
-            <motion.div
-              key={video._id}
-              className="glass-card rounded-2xl overflow-hidden border border-yellow-500/10"
-            >
+          {videos.map((video) => {
+            const thumb = video.thumbnail || getAutoThumbnail(video.youtubeUrl);
 
-              {/* Thumbnail */}
-              <div className="relative aspect-video bg-black overflow-hidden">
+            return (
+              <motion.div
+                key={video._id}
+                className="glass-card rounded-2xl overflow-hidden border border-yellow-500/10"
+              >
 
-                <img
-                  src={
-                    video.thumbnail ||
-                    getThumbnail(video.youtubeUrl)
-                  }
-                  alt={video.title}
-                  className="w-full h-full object-cover"
-                />
+                {/* Thumbnail */}
+                <div className="relative aspect-video bg-black overflow-hidden">
 
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                  <Video className="w-10 h-10 text-yellow-400" />
+                  <img
+                    src={thumb}
+                    alt={video.title}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      const id = getVideoId(video.youtubeUrl);
+                      if (id && !target.src.includes('mqdefault')) {
+                        target.src = `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
+                      }
+                    }}
+                  />
+
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <Video className="w-10 h-10 text-yellow-400" />
+                  </div>
                 </div>
-              </div>
 
-              {/* Content */}
-              <div className="p-4 space-y-2">
+                {/* Content */}
+                <div className="p-4 space-y-2">
 
-                <h3 className="text-white font-bold text-sm line-clamp-1">
-                  {video.title}
-                </h3>
+                  <h3 className="text-white font-bold text-sm line-clamp-1">
+                    {video.title}
+                  </h3>
 
-                <p className="text-stone-400 text-xs line-clamp-2">
-                  {video.description ||
-                    'விளக்கம் இல்லை'}
-                </p>
-              </div>
+                  <p className="text-stone-400 text-xs line-clamp-2">
+                    {video.description ||
+                      'விளக்கம் இல்லை'}
+                  </p>
+                </div>
 
-              {/* Buttons */}
-              <div className="px-4 pb-4 flex justify-end gap-2 border-t border-amber-900/20 pt-3">
+                {/* Buttons */}
+                <div className="px-4 pb-4 flex justify-end gap-2 border-t border-amber-900/20 pt-3">
 
-                <button
-                  onClick={() => handleEdit(video)}
-                  className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-amber-200"
-                >
-                  <Edit className="w-4 h-4" />
-                </button>
+                  <button
+                    onClick={() => handleEdit(video)}
+                    className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-amber-200"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
 
-                <button
-                  onClick={() =>
-                    handleDelete(video._id)
-                  }
-                  className="p-2 rounded-lg bg-red-950/20 hover:bg-red-950/40 text-red-400"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                  <button
+                    onClick={() =>
+                      handleDelete(video._id)
+                    }
+                    className="p-2 rounded-lg bg-red-950/20 hover:bg-red-950/40 text-red-400"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
 
-              </div>
-            </motion.div>
-          ))}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       )}
     </div>
   );
 }
-

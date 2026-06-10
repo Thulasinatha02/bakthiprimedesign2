@@ -7,6 +7,25 @@ interface Params {
   params: Promise<{ id: string }>;
 }
 
+/** Extract YouTube video ID from any URL format */
+function extractVideoId(url: string): string {
+  if (!url) return '';
+  const embedMatch = url.match(/youtube\.com\/embed\/([^?&#]+)/);
+  if (embedMatch) return embedMatch[1];
+  const shortsMatch = url.match(/youtube\.com\/shorts\/([^?&#]+)/);
+  if (shortsMatch) return shortsMatch[1];
+  const watchMatch = url.match(/[?&]v=([^&#]+)/);
+  if (watchMatch) return watchMatch[1];
+  const shortMatch = url.match(/youtu\.be\/([^?&#]+)/);
+  if (shortMatch) return shortMatch[1];
+  return '';
+}
+
+function autoThumbnail(url: string): string {
+  const id = extractVideoId(url);
+  return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '';
+}
+
 export const GET = withDb(async (request: Request, { params }: Params) => {
   try {
     const { id } = await params;
@@ -30,6 +49,11 @@ export const PUT = withDb(async (request: Request, { params }: Params) => {
 
     const { id } = await params;
     const body = await request.json();
+
+    // Auto-generate thumbnail if the YouTube URL is present but thumbnail is empty
+    if (body.youtubeUrl && !body.thumbnail) {
+      body.thumbnail = autoThumbnail(body.youtubeUrl);
+    }
 
     const updatedVideo = await Video.findByIdAndUpdate(id, body, {
       new: true,
