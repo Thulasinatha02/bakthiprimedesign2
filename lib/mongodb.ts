@@ -38,6 +38,7 @@ export async function dbConnect() {
     };
 
     cached!.promise = mongoose.connect(MONGODB_URI!, opts).then((mongooseInstance) => {
+      console.log("Connected DB:", mongoose.connection.db?.databaseName);
       return mongooseInstance;
     });
   }
@@ -45,9 +46,11 @@ export async function dbConnect() {
   try {
     cached!.conn = await cached!.promise;
   } catch (e) {
+    console.error("MongoDB Error:", e);
     cached!.promise = null;
     throw e;
   }
 
   return cached!.conn;
 }
+

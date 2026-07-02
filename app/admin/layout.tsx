@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { 
   LayoutDashboard, Newspaper, Video, Users, 
   MapPin, Calendar, LogOut, Home, KeyRound, Sparkles,
-  Image as ImageIcon, Zap, Clock
+  Image as ImageIcon, Zap, Clock, ClipboardList
 } from 'lucide-react';
 
 export default function AdminLayout({
@@ -66,6 +66,7 @@ export default function AdminLayout({
     { name: 'செய்திகள் (News)', href: '/admin/news', icon: Newspaper },
     { name: 'வீடியோக்கள் (Videos)', href: '/admin/videos', icon: Video },
     { name: 'ராசிபலன் (Rasi Palan)', href: '/admin/rasipalan', icon: Sparkles },
+    { name: 'விண்ணப்பங்கள் (Applications)', href: '/admin/astrologer-applications', icon: ClipboardList },
     { name: 'ஜோதிடர்கள் (Astrologers)', href: '/admin/astrologers', icon: Users },
     { name: 'கோவில்கள் (Temples)', href: '/admin/temples', icon: MapPin },
     { name: 'திருவிழாக்கள் (Festivals)', href: '/admin/festivals', icon: Calendar },

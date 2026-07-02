@@ -433,7 +433,39 @@ const translations: Record<string, Record<Language, string>> = {
   'பயம் மற்றும் தடைகள் நீங்கி வெற்றி பெற ஹனுமான் சாலிசா பாடல் கேட்கலாம்.': {
     ta: 'பயம் மற்றும் தடைகள் நீங்கி வெற்றி பெற ஹனுமான் சாலிசா பாடல் கேட்கலாம்.',
     en: 'Listen to Hanuman Chalisa to eliminate fears and barriers, achieving success.'
-  }
+  },
+
+  // Astrologer Application Form
+  'விண்ணப்பத்தை சமர்ப்பிக்க முடியவில்லை. (Failed to submit application)': { ta: 'விண்ணப்பத்தை சமர்ப்பிக்க முடியவில்லை.', en: 'Failed to submit application.' },
+  'இணைப்புப் பிழை. (Connection Error)': { ta: 'இணைப்புப் பிழை.', en: 'Connection Error.' },
+  'விண்ணப்பம் வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது!': { ta: 'விண்ணப்பம் வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது!', en: 'Application submitted successfully!' },
+  'உங்கள் விண்ணப்பத்தை நாங்கள் பெற்றுள்ளோம். எங்களது தேர்வுக் குழு உங்களின் விவரங்களைச் சரிபார்த்து, நேர்காணல் தொடர்பான தகவல்களுடன் உங்களைத் தொடர்புகொள்வார்கள்.': { ta: 'உங்கள் விண்ணப்பத்தை நாங்கள் பெற்றுள்ளோம். எங்களது தேர்வுக் குழு உங்களின் விவரங்களைச் சரிபார்த்து, நேர்காணல் தொடர்பான தகவல்களுடன் உங்களைத் தொடர்புகொள்வார்கள்.', en: 'We have received your application. Our selection team will verify your details and contact you with interview information.' },
+  'முகப்புக்குத் திரும்பு': { ta: 'முகப்புக்குத் திரும்பு', en: 'Return to Home' },
+  'ஜோதிடராக இணைய விண்ணப்பிக்கவும்': { ta: 'ஜோதிடராக இணைய விண்ணப்பிக்கவும்', en: 'Apply to Join as an Astrologer' },
+  'எங்கள் தளத்தில் இணைந்து, உலகம் முழுவதிலுமுள்ள மக்களுக்கு உங்கள் ஜோதிட ஆலோசனைகளை வழங்க இப்போதே விண்ணப்பிக்கவும்.': { ta: 'எங்கள் தளத்தில் இணைந்து, உலகம் முழுவதிலுமுள்ள மக்களுக்கு உங்கள் ஜோதிட ஆலோசனைகளை வழங்க இப்போதே விண்ணப்பிக்கவும்.', en: 'Join our platform and apply now to provide your astrological consultations to people all over the world.' },
+  'விண்ணப்பப் படிவம்': { ta: 'விண்ணப்பப் படிவம்', en: 'Application Form' },
+  'கீழ்க்கண்ட அனைத்து விவரங்களையும் சரியாக நிரப்பவும்.': { ta: 'கீழ்க்கண்ட அனைத்து விவரங்களையும் சரியாக நிரப்பவும்.', en: 'Please fill out all the details below accurately.' },
+  'ஜோதிடர் பெயர் (Astrologer Name) *': { ta: 'ஜோதிடர் பெயர் (Astrologer Name) *', en: 'Astrologer Name *' },
+  'எ.கா: ஜோதிட ரத்னா சுப்பிரமணியம்': { ta: 'எ.கா: ஜோதிட ரத்னா சுப்பிரமணியம்', en: 'Eg: Astrologer Ratna Subramaniam' },
+  'சிறப்புத் துறை (Specialty) *': { ta: 'சிறப்புத் துறை (Specialty) *', en: 'Specialty *' },
+  'எ.கா: வேத ஜோதிடம் & கைரேகை': { ta: 'எ.கா: வேத ஜோதிடம் & கைரேகை', en: 'Eg: Vedic Astrology & Palmistry' },
+  'அனுபவம் (Experience in Years) *': { ta: 'அனுபவம் (Experience in Years) *', en: 'Experience (in Years) *' },
+  'எ.கா: 15': { ta: 'எ.கா: 15', en: 'Eg: 15' },
+  'தொலைபேசி எண் (Phone)': { ta: 'தொலைபேசி எண் (Phone)', en: 'Phone Number' },
+  '+91 XXXXXXXXXX': { ta: '+91 XXXXXXXXXX', en: '+91 XXXXXXXXXX' },
+  'மின்னஞ்சல் (Email)': { ta: 'மின்னஞ்சல் (Email)', en: 'Email' },
+  'name@example.com': { ta: 'name@example.com', en: 'name@example.com' },
+  'புகைப்பட லிங்க் (Photo URL)': { ta: 'புகைப்பட லிங்க் (Photo URL)', en: 'Photo URL' },
+  'https://example.com/photo.jpg': { ta: 'https://example.com/photo.jpg', en: 'https://example.com/photo.jpg' },
+  'உங்கள் தெளிவான புகைப்படம் உள்ள ஒரு இணைய முகவரியை (URL) வழங்கவும்.': { ta: 'உங்கள் தெளிவான புகைப்படம் உள்ள ஒரு இணைய முகவரியை (URL) வழங்கவும்.', en: 'Please provide a URL to a clear photo of yourself.' },
+  'புகைப்படம் அல்லது ஆவணம் (Upload Photo / Document)': { ta: 'புகைப்படம் அல்லது ஆவணம்', en: 'Upload Photo or Document' },
+  'கோப்பு 2MB அளவுக்குள் இருக்க வேண்டும். (File must be under 2MB)': { ta: 'கோப்பு 2MB அளவுக்குள் இருக்க வேண்டும்.', en: 'File must be under 2MB.' },
+  'jpg, png, doc, pdf கோப்புகளை பதிவேற்றவும் (2MB-க்குள்).': { ta: 'jpg, png, doc, pdf கோப்புகளை பதிவேற்றவும் (2MB-க்குள்).', en: 'Upload jpg, png, doc, or pdf files (under 2MB).' },
+  'கோப்பு தேர்ந்தெடுக்கப்பட்டது.': { ta: 'கோப்பு தேர்ந்தெடுக்கப்பட்டது.', en: 'File selected successfully.' },
+  'சமர்ப்பிக்கப்படுகிறது...': { ta: 'சமர்ப்பிக்கப்படுகிறது...', en: 'Submitting...' },
+  'விண்ணப்பத்தை சமர்ப்பி': { ta: 'விண்ணப்பத்தை சமர்ப்பி', en: 'Submit Application' },
+  'ஜோதிடராக இணைய (Apply)': { ta: 'ஜோதிடராக இணைய (Apply)', en: 'Apply as Astrologer' },
+  'ஜோதிடராக இணைய': { ta: 'ஜோதிடராக இணைய', en: 'Apply as Astrologer' }
 };
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

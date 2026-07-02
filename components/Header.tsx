@@ -150,6 +150,14 @@ export default function Header() {
           {/* ── Desktop Right Controls (lg+) ── */}
           <div className="hidden lg:flex items-center gap-2 flex-shrink-0">
 
+            {/* Apply as Astrologer Button */}
+            <Link
+              href="/astrologers/apply"
+              className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-400 hover:to-orange-400 shadow-md transition border border-amber-300/50"
+            >
+              <span>{t('ஜோதிடராக இணைய')}</span>
+            </Link>
+
             {/* Language Toggle */}
             <button
               onClick={() => setLanguage(language === 'ta' ? 'en' : 'ta')}
@@ -253,6 +261,15 @@ export default function Header() {
                     {t(item.name)}
                   </Link>
                 ))}
+                
+                {/* Apply Link (Mobile) */}
+                <Link
+                  href="/astrologers/apply"
+                  onClick={() => setIsOpen(false)}
+                  className="block px-3 py-2.5 rounded-xl text-base font-bold bg-amber-900/50 text-amber-300 hover:bg-amber-800 transition border border-amber-700/50"
+                >
+                  {t('ஜோதிடராக இணைய (Apply)')}
+                </Link>
               </div>
 
               {/* Rasi Palan */}
